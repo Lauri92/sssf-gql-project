@@ -1,0 +1,30 @@
+{
+  "name": "sssf-gql-project",
+  "version": "1.0.0",
+  "description": "GraphQL API for Server-side Scripting Frameworks course",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lauri92/sssf-gql-project.git"
+  },
+  "keywords": [
+    "GraphQL",
+    "GQL"
+  ],
+  "author": "Lauri Riikonen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Lauri92/sssf-gql-project/issues"
+  },
+  "homepage": "https://github.com/Lauri92/sssf-gql-project#readme",
+  "type": "module",
+  "dependencies": {
+    "apollo-server-express": "^3.6.7",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "mongoose": "^6.2.10"
+  }
+}
