@@ -13,7 +13,12 @@ export default gql(`
     id: ID
     username: String,
     nickname: String,
-    token: String
+  }
+  
+  input UserInput {
+    id: ID
+    username: String
+    nickname: String
   }
   
 `);

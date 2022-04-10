@@ -1,11 +1,10 @@
-import infoLink from '../models/infoLinkModel.js';
-import bcrypt from 'bcrypt';
+import InfoLink from '../models/infoLinkModel.js';
 import User from '../models/userModel.js';
 
 export default {
   Mutation: {
     addInfoLink: async (parent, args) => {
-      return await infoLink.create(args);
+      return await InfoLink.create(args);
     },
   },
 };

@@ -4,14 +4,20 @@ export default gql`
 
 extend type Mutation {
     addInfoLink(
-    url: String!,
-    userId: ID!,
+    url: String!
+    userId: ID!
     ): Link
   }
 
 type Link {
     id: ID
-    userId: ID,
+    userId: ID
+    url: String
+  }
+  
+input LinkInput {
+    id: ID
+    userId: ID
     url: String
   }
 `;
