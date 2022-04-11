@@ -4,6 +4,7 @@ import typeDefs from './schemas/schemasIndex.js';
 import resolvers from './resolvers/resolversIndex.js';
 import connectMongo from './db/db.js';
 import dotenv from 'dotenv';
+import {checkAuth} from './utils/auth.js';
 
 dotenv.config();
 
@@ -19,6 +20,12 @@ dotenv.config();
     const server = new ApolloServer({
       typeDefs,
       resolvers,
+      context: async ({req}) => {
+        if (req) {
+          const user = await checkAuth(req);
+          return {user, req};
+        }
+      },
     });
 
     const app = express();
