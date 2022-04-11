@@ -6,7 +6,7 @@ export default {
   Query: {
     login: async (parent, args, {req}) => {
       console.log('Do something in login');
-      req.body = args
+      req.body = args;
       return await login(req);
     },
   },
@@ -18,6 +18,12 @@ export default {
         password: await bcrypt.hash(args.password, 12),
       };
       return await User.create(insertableUser);
+    },
+  },
+
+  Group: {
+    admin: async (parent, args) => {
+      return User.findById(parent.adminId);
     },
   },
 };

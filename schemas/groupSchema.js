@@ -1,18 +1,31 @@
 import {gql} from 'apollo-server-express';
 
 export default gql`
+
+  extend type Query {
+    getGroup(id: ID!): Group
+  }
   
   extend type Mutation {
     addGroup(
-      adminId: ID
+      adminId: ID!
       members: [UserInput]
       links: [LinkInput]
-      name: String
-      description: String
-    ): Group
+      name: String!
+      description: String!
+    ): GroupInput
   }
   
   type Group {
+    id: ID
+    admin: User
+    members: [User]
+    links: [Link]
+    name: String
+    description: String
+  }
+  
+   type GroupInput {
     id: ID
     adminId: ID
     members: [User]
@@ -20,7 +33,4 @@ export default gql`
     name: String
     description: String
   }
-  
-  
-  
 `;
