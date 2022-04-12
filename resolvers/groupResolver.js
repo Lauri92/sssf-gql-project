@@ -16,5 +16,17 @@ export default {
     addGroup: async (parent, args) => {
       return await Group.create(args);
     },
+    addUserToGroup: async (parent, args) => {
+      const chosenGroup = await Group.findById(args.groupId);
+
+      //if (!chosenGroup.members.includes(args.userId)) {
+      return Group.findOneAndUpdate(
+          {_id: args.groupId},
+          {$push: {members: args.userId}}, {new: true},
+      );
+      //}
+      //return "Hello"
+
+    },
   },
 };

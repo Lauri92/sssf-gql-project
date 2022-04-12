@@ -13,7 +13,12 @@ export default gql`
       links: [LinkInput]
       name: String!
       description: String!
-    ): GroupInput
+    ): Group
+    
+    addUserToGroup(
+      groupId: ID!
+      userId: ID!
+    ): Group
   }
   
   type Group {
