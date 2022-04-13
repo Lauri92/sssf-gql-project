@@ -26,7 +26,6 @@ export default {
       return User.findById(parent.admin);
     },
     members: async (parent, args) => {
-      console.log(parent);
       return User.find({_id: {$in: parent.members}});
     },
   },
