@@ -6,6 +6,7 @@ extend type Mutation {
     addInfoLink(
     url: String!
     userId: ID!
+    group: ID!
     ): Link
   }
 
@@ -13,6 +14,7 @@ type Link {
     id: ID
     userId: ID
     url: String
+    group: ID
   }
   
 input LinkInput {
