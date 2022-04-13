@@ -5,7 +5,6 @@ import {login} from '../utils/auth.js';
 export default {
   Query: {
     login: async (parent, args, {req}) => {
-      console.log('Do something in login');
       req.body = args;
       return await login(req);
     },
