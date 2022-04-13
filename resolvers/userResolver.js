@@ -23,7 +23,7 @@ export default {
 
   Group: {
     admin: async (parent, args) => {
-      return User.findById(parent.adminId);
+      return User.findById(parent.admin);
     },
     members: async (parent, args) => {
       console.log(parent);
