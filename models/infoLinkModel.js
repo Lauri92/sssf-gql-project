@@ -8,7 +8,7 @@ const Schema = mongoose.Schema;
 
 const infoLinkSchema = new Schema({
   group: {type: Schema.Types.ObjectId, ref: Group},
-  userId: {type: Schema.Types.ObjectId, ref: User},
+  user: {type: Schema.Types.ObjectId, ref: User},
   url: {type: String, required: true},
 }, {
   timestamps: true,

@@ -5,7 +5,9 @@ import Group from '../models/groupModel.js';
 export default {
   Mutation: {
     addInfoLink: async (parent, args) => {
+      //console.log(args);
       const link = await InfoLink.create(args);
+      console.log('link._id',link._id);
       await Group.findOneAndUpdate(
           {_id: args.group},
           {$push: {links: link._id}}, {new: true},

@@ -8,7 +8,6 @@ export default {
 
   Query: {
     getGroup: async (parent, args) => {
-      console.log(args);
       return Group.findById(args.id);
     },
   },

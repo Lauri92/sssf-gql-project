@@ -29,4 +29,11 @@ export default {
       return User.find({_id: {$in: parent.members}});
     },
   },
+
+  Link: {
+    user: async (parent, args) => {
+      return User.findById({_id: parent.user});
+    },
+  },
+
 };
