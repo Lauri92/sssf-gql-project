@@ -23,16 +23,26 @@ export default {
         description: args.description,
       });
     },
-    addUserToGroup: async (parent, args) => {
+    addUserToGroup: async (parent, args, context) => {
+
+      if (!context.user) {
+        throw new AuthenticationError(
+            'You are not allowed to add users to groups!');
+      }
+
       const chosenGroup = await Group.findById(args.groupId);
 
-      if (!chosenGroup.members.includes(args.userId)) {
-        return Group.findOneAndUpdate(
-            {_id: args.groupId},
-            {$push: {members: args.userId}}, {new: true},
-        );
+      if (chosenGroup.admin.toString() === context.user.id) {
+        if (!chosenGroup.members.includes(args.userId)) {
+          return Group.findOneAndUpdate(
+              {_id: args.groupId},
+              {$push: {members: args.userId}}, {new: true},
+          );
+        }
+        throw new UserInputError('User already exists in the group');
+      } else {
+        throw new AuthenticationError('Only Admin can add users');
       }
-      throw new UserInputError('User already exists in the group');
     },
   },
 };
