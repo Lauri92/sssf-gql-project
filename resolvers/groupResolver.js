@@ -2,7 +2,7 @@
 import Group from '../models/groupModel.js';
 import Link from '../models/infoLinkModel.js';
 import User from '../models/userModel.js';
-import {UserInputError} from 'apollo-server-express';
+import {AuthenticationError, UserInputError} from 'apollo-server-express';
 
 export default {
 
@@ -13,7 +13,10 @@ export default {
   },
 
   Mutation: {
-    addGroup: async (parent, args) => {
+    addGroup: async (parent, args, context) => {
+      if (!context.user) {
+        throw new AuthenticationError('You are not allowed to create groups!');
+      }
       return await Group.create(args);
     },
     addUserToGroup: async (parent, args) => {
