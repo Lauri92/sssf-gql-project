@@ -8,7 +8,6 @@ export default gql`
   
   extend type Mutation {
     addGroup(
-      admin: ID!
       members: [UserInput]
       links: [LinkInput]
       name: String!

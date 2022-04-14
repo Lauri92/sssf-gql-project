@@ -17,7 +17,11 @@ export default {
       if (!context.user) {
         throw new AuthenticationError('You are not allowed to create groups!');
       }
-      return await Group.create(args);
+      return await Group.create({
+        admin: context.user.id,
+        name: args.name,
+        description: args.description,
+      });
     },
     addUserToGroup: async (parent, args) => {
       const chosenGroup = await Group.findById(args.groupId);
