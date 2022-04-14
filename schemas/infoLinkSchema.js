@@ -5,7 +5,6 @@ export default gql`
 extend type Mutation {
     addInfoLink(
     url: String!
-    user: ID!
     group: ID!
     ): Link
   }
