@@ -31,13 +31,17 @@ dotenv.config();
 
     const app = express();
 
+    app.get('/', async (req, res) => {
+      res.send('Hello travel-journal');
+    });
+
     await server.start();
 
     server.applyMiddleware({app});
 
     app.listen({port: process.env.PORT || 3000}, () =>
         console.log(
-            `🚀 Server ready at http://localhost:3000${server.graphqlPath}`),
+            `🚀 Server ready`),
     );
   } catch (e) {
     console.log('server error: ' + e.message);
