@@ -7,8 +7,36 @@ import {AuthenticationError, UserInputError} from 'apollo-server-express';
 export default {
 
   Query: {
-    getGroup: async (parent, args) => {
-      return Group.findById(args.id);
+    getGroup: async (parent, args, context) => {
+
+      if (!context.user) {
+        throw new AuthenticationError('You are not authorized');
+      }
+
+      const requestedGroup = await Group.findById(args.id);
+      const requestedGroupAdmin = requestedGroup.admin.toString();
+      const requestedGroupMembers = requestedGroup.members.map(member => {
+        return member.toString();
+      });
+
+      if (requestedGroupAdmin === context.user.id ||
+          requestedGroupMembers.includes(context.user.id)) {
+        return requestedGroup;
+      }
+      throw new AuthenticationError('You are not part of this group!');
+    },
+    getGroupsByUserId: async (parent, args, context) => {
+      if (!context.user) {
+        throw new AuthenticationError('You are not authorized');
+      }
+      return Group.find(
+          {
+            $or: [
+              {admin: context.user.id},
+              {
+                members: {$in: context.user.id},
+              }],
+          });
     },
   },
 

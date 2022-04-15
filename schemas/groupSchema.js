@@ -4,6 +4,7 @@ export default gql`
 
   extend type Query {
     getGroup(id: ID!): Group
+    getGroupsByUserId: [Group]
   }
   
   extend type Mutation {
