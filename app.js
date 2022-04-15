@@ -26,6 +26,7 @@ dotenv.config();
           return {user, req};
         }
       },
+      introspection: true,
     });
 
     const app = express();
