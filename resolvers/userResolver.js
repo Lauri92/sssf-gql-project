@@ -16,7 +16,12 @@ export default {
         ...args,
         password: await bcrypt.hash(args.password, 12),
       };
-      return await User.create(insertableUser);
+
+      const checkDuplicate = await User.find({username: args.username});
+      if (checkDuplicate.length === 0) {
+        return await User.create(insertableUser);
+      }
+      throw new Error("Error registering")
     },
   },
 
