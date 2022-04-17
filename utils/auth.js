@@ -26,7 +26,7 @@ const login = (req) => {
           reject(err);
         }
         const token = jwt.sign(req.user, process.env.JWT_SECRET_OR_KEY);
-        resolve({...user, token, id: user._id});
+        resolve({...user, token, id: user.id});
       });
     })(req);
   });
