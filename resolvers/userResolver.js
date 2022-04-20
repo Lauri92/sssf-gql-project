@@ -1,12 +1,20 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/userModel.js';
 import {login} from '../utils/auth.js';
+import {AuthenticationError} from 'apollo-server-express';
 
 export default {
   Query: {
     login: async (parent, args, {req}) => {
       req.body = args;
       return await login(req);
+    },
+    searchUsers: async (parent, args, context) => {
+      if (!context.user) {
+        throw new AuthenticationError('You are not authenticated');
+      }
+      return User.find(
+          {'username': {'$regex': args.searchInput, '$options': 'i'}});
     },
   },
 
@@ -21,7 +29,7 @@ export default {
       if (checkDuplicate.length === 0) {
         return await User.create(insertableUser);
       }
-      throw new Error("Error registering")
+      throw new Error('Error registering');
     },
   },
 

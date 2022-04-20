@@ -4,6 +4,7 @@ export default gql(`
 
   extend type Query {
     login(username: String!, password: String!): User
+    searchUsers(searchInput: String!): [User]
   }
 
   extend type Mutation {
