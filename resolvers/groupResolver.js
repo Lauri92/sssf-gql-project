@@ -79,12 +79,12 @@ export default {
       if (!context.user) {
         throw new AuthenticationError('You are not authorized');
       }
+      if (args.name.length > 15 || args.description.length > 50) {
+        throw new Error('Check input lengths');
+      }
       const group = await Group.findById(args.groupId);
       if (context.user.id !== group.admin.toString()) {
         throw new AuthenticationError('You are not the admin.');
-      }
-      if (args.name.length > 15 || args.description.length > 50) {
-        throw new Error('Check input lengths');
       }
       try {
         return await Group.findOneAndUpdate(

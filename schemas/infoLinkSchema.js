@@ -7,6 +7,11 @@ extend type Mutation {
     url: String!
     group: ID!
     ): Link
+    
+    removeInfoLink(
+      groupId: ID!
+      linkId: ID!
+    ): String
   }
 
 type Link {

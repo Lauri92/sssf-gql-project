@@ -33,6 +33,35 @@ export default {
         throw new AuthenticationError('You are not a part of this group');
       }
     },
+    removeInfoLink: async (parent, args, context) => {
+
+      if (!context.user) {
+        throw new AuthenticationError('You are not authorized!');
+      }
+      const group = await Group.findById(args.groupId);
+      const groupAdmin = group.admin.toString();
+
+      const link = await InfoLink.findById(args.linkId);
+      const linkSubmitter = link.user.toString();
+
+      if (context.user.id === groupAdmin ||
+          context.user.id === linkSubmitter) {
+        try {
+          await Group.findOneAndUpdate(
+              {_id: args.groupId},
+              {$pull: {links: args.linkId}});
+
+          await InfoLink.findOneAndDelete({_id: args.linkId});
+
+          return 'Link removed successfully.';
+        } catch (e) {
+          throw new Error('Failed to remove link');
+        }
+      } else {
+        throw new AuthenticationError(
+            'You are not allowed to delete this link');
+      }
+    },
   },
 
   Group: {
