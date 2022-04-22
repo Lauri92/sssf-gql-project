@@ -19,6 +19,12 @@ export default gql`
       groupId: ID!
       userId: ID!
     ): Group
+    
+    updateGroup(
+      groupId: ID!
+      name: String!
+      description: String!
+    ): Group
   }
   
   type Group {

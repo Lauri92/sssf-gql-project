@@ -45,6 +45,9 @@ export default {
       if (!context.user) {
         throw new AuthenticationError('You are not allowed to create groups!');
       }
+      if (args.name.length > 15 || args.description.length > 50) {
+        throw new Error('Check input lengths');
+      }
       return await Group.create({
         admin: context.user.id,
         name: args.name,
@@ -70,6 +73,25 @@ export default {
         throw new UserInputError('User already exists in the group');
       } else {
         throw new AuthenticationError('Only Admin can add users');
+      }
+    },
+    updateGroup: async (parent, args, context) => {
+      if (!context.user) {
+        throw new AuthenticationError('You are not authorized');
+      }
+      const group = await Group.findById(args.groupId);
+      if (context.user.id !== group.admin.toString()) {
+        throw new AuthenticationError('You are not the admin.');
+      }
+      if (args.name.length > 15 || args.description.length > 50) {
+        throw new Error('Check input lengths');
+      }
+      try {
+        return await Group.findOneAndUpdate(
+            {_id: args.groupId},
+            {name: args.name, description: args.description}, {new: true});
+      } catch (e) {
+        throw new Error('Something went wrong updating');
       }
     },
   },
