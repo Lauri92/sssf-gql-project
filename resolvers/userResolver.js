@@ -13,6 +13,9 @@ export default {
       if (!context.user) {
         throw new AuthenticationError('You are not authenticated');
       }
+      if (args.searchInput.length < 3) {
+        throw new Error('Search input must be at least 3 characters long');
+      }
       return User.find(
           {'username': {'$regex': args.searchInput, '$options': 'i'}});
     },
