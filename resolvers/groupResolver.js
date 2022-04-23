@@ -94,5 +94,31 @@ export default {
         throw new Error('Something went wrong updating');
       }
     },
+    deleteGroup: async (parent, args, context) => {
+      if (!context.user) {
+        throw new AuthenticationError('You are not authorized');
+      }
+
+      const group = await Group.findById(args.groupId);
+
+      if (context.user.id !== group.admin.toString()) {
+        throw new Error('Only the admin can delete the group!');
+      }
+
+      const links = group.links.map(link => {
+        return link.toString();
+      });
+
+      try {
+        await Link.deleteMany({_id: links});
+
+        await Group.deleteOne({_id: args.groupId});
+
+        return 'Group deleted';
+      } catch (e) {
+        throw new Error('Something went wrong deleting group');
+      }
+
+    },
   },
 };

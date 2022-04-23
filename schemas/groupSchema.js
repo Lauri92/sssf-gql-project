@@ -25,6 +25,11 @@ export default gql`
       name: String!
       description: String!
     ): Group
+    
+    deleteGroup(
+      groupId: ID!
+    ): String
+    
   }
   
   type Group {
