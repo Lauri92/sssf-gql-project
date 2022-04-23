@@ -41,6 +41,13 @@ export default {
       const group = await Group.findById(args.groupId);
       const groupAdmin = group.admin.toString();
 
+      const linkList = group.links.map(link => {
+        return link.toString();
+      });
+      if (!linkList.includes(args.linkId)) {
+        throw new Error('Don\'t try anything funny');
+      }
+
       const link = await InfoLink.findById(args.linkId);
       const linkSubmitter = link.user.toString();
 
@@ -61,6 +68,7 @@ export default {
         throw new AuthenticationError(
             'You are not allowed to delete this link');
       }
+
     },
   },
 
