@@ -20,6 +20,11 @@ export default gql`
       userId: ID!
     ): Group
     
+    removeUserFromGroup(
+      groupId: ID!
+      userId: ID!
+    ): String
+    
     userSelfLeaveGroup(
       groupId: ID!
     ): String

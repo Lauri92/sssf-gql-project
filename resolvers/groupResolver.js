@@ -76,6 +76,25 @@ export default {
         throw new AuthenticationError('Only Admin can add users');
       }
     },
+    removeUserFromGroup: async (parent, args, context) => {
+      if (!context.user) {
+        throw new AuthenticationError('You are not authorized');
+      }
+      const group = await Group.findById(args.groupId);
+      if (group.admin.toString() === context.user.id) {
+        try {
+          await Group.findOneAndUpdate(
+              {_id: args.groupId},
+              {$pull: {members: args.userId}},
+          );
+          return 'Removed user from group';
+        } catch (e) {
+          throw new Error('Failed to remove user from group');
+        }
+      } else {
+        throw new Error('You are not the group admin');
+      }
+    },
     userSelfLeaveGroup: async (parent, args, context) => {
       if (!context.user) {
         throw new AuthenticationError('You are not authorized');
