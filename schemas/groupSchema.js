@@ -20,6 +20,10 @@ export default gql`
       userId: ID!
     ): Group
     
+    userSelfLeaveGroup(
+      groupId: ID!
+    ): String
+    
     updateGroup(
       groupId: ID!
       name: String!

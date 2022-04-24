@@ -45,7 +45,8 @@ export default {
       if (!context.user) {
         throw new AuthenticationError('You are not allowed to create groups!');
       }
-      if (args.name.length > 15 || args.description.length > 50) {
+      if (args.name.length > 15 || args.name.length < 3 ||
+          args.description.length > 50 || args.description.length < 3) {
         throw new Error('Check input lengths');
       }
       return await Group.create({
@@ -73,6 +74,19 @@ export default {
         throw new UserInputError('User already exists in the group');
       } else {
         throw new AuthenticationError('Only Admin can add users');
+      }
+    },
+    userSelfLeaveGroup: async (parent, args, context) => {
+      if (!context.user) {
+        throw new AuthenticationError('You are not authorized');
+      }
+      try {
+        await Group.findOneAndUpdate(
+            {_id: args.groupId},
+            {$pull: {members: context.user.id}});
+        return 'Group left successfully';
+      } catch (e) {
+        throw new Error('Failed to leave group.');
       }
     },
     updateGroup: async (parent, args, context) => {

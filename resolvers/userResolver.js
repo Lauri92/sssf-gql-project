@@ -28,6 +28,10 @@ export default {
         password: await bcrypt.hash(args.password, 12),
       };
 
+      if (insertableUser.username.length < 3) {
+        throw new Error('Too short username');
+      }
+
       const checkDuplicate = await User.find({username: args.username});
       if (checkDuplicate.length === 0) {
         return await User.create(insertableUser);
