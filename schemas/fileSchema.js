@@ -5,7 +5,7 @@ export default gql`
 scalar Upload
 
 type Mutation {
-    singleUpload(file: Upload!): File!
+    profilePictureUpload(file: Upload!): File!
   }
 
 type File {
