@@ -5,6 +5,7 @@ import resolvers from './resolvers/resolversIndex.js';
 import connectMongo from './db/db.js';
 import dotenv from 'dotenv';
 import {checkAuth} from './utils/auth.js';
+import {graphqlUploadExpress} from 'graphql-upload';
 
 dotenv.config();
 
@@ -34,6 +35,8 @@ dotenv.config();
     app.get('/', async (req, res) => {
       res.send('Hello travel-journal');
     });
+
+    app.use(graphqlUploadExpress());
 
     await server.start();
 
