@@ -26,12 +26,13 @@ export default {
 
       if (mimetype.includes('image')) {
         try {
-          const uploadedFileName = await uploadImage(createReadStream);
+          const uploadedImageName = await uploadImage(createReadStream,
+              context.user.id);
           await User.findByIdAndUpdate(context.user.id,
-              {profileImageUrl: `${containerName}/${uploadedFileName}`});
-
+              {profileImageUrl: `${containerName}/${uploadedImageName}`});
           return {filename, mimetype, encoding};
         } catch (e) {
+          console.log(e.message);
           throw new Error('Something went wrong uploading image');
         }
       } else {
@@ -43,7 +44,7 @@ export default {
 
 };
 
-const uploadImage = async (createReadStream) => {
+const uploadImage = async (createReadStream, userId) => {
 
   const stream = createReadStream();
   const uuidFileName = await uuidv4();
@@ -51,6 +52,18 @@ const uploadImage = async (createReadStream) => {
   stream.pipe(out);
   await finished(out);
 
+  const user = await User.findById(userId);
+
+  if (user.profileImageUrl !== undefined) {
+    await deleteOldProfileImageFromStorage(user);
+  }
+
+  await uploadNewProfileImage(uuidFileName);
+
+  return uuidFileName;
+};
+
+const uploadNewProfileImage = async (uuidFileName) => {
   const containerClient = await blobServiceClient.getContainerClient(
       containerName);
   await containerClient.createIfNotExists();
@@ -61,5 +74,11 @@ const uploadImage = async (createReadStream) => {
   await fs.unlink(filePath, err => {
     if (err) throw err;
   });
-  return uuidFileName;
+};
+
+const deleteOldProfileImageFromStorage = async (user) => {
+  const context = user.profileImageUrl;
+  const blobToDelete = context.match(/\/(.*)/)[1];
+  const container = await blobServiceClient.getContainerClient(containerName);
+  await container.deleteBlob(blobToDelete);
 };
