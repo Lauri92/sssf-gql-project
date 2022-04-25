@@ -26,7 +26,7 @@ export default {
 
       if (mimetype.includes('image')) {
         try {
-          const uploadedImageName = await uploadImage(createReadStream,
+          const uploadedImageName = await handleImage(createReadStream,
               context.user.id);
           await User.findByIdAndUpdate(context.user.id,
               {profileImageUrl: `${containerName}/${uploadedImageName}`});
@@ -44,7 +44,7 @@ export default {
 
 };
 
-const uploadImage = async (createReadStream, userId) => {
+const handleImage = async (createReadStream, userId) => {
 
   const stream = createReadStream();
   const uuidFileName = await uuidv4();
