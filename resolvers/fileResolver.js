@@ -18,7 +18,7 @@ export default {
 
   Mutation: {
     profilePictureUpload: async (parent, {file}, context) => {
-
+      console.log("A request made it here!");
       if (!context.user) {
         throw new AuthenticationError('You are not authorized');
       }
