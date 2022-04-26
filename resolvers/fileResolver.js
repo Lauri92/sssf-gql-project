@@ -18,13 +18,17 @@ export default {
 
   Mutation: {
     profilePictureUpload: async (parent, {file}, context) => {
-      console.log("A request made it here!");
+      console.log('A request made it here!');
       if (!context.user) {
+        console.log('Not authorized');
         throw new AuthenticationError('You are not authorized');
       }
+      console.log('Was authorized!');
       const {createReadStream, filename, mimetype, encoding} = await file;
 
+      console.log('File: ', file);
       if (mimetype.includes('image')) {
+        console.log('Was image!');
         try {
           const uploadedImageName = await handleImage(createReadStream,
               context.user.id);
@@ -36,6 +40,7 @@ export default {
           throw new Error('Something went wrong uploading image');
         }
       } else {
+        console.log('Not an image!');
         throw new Error('Only image uploads are allowed');
       }
 
