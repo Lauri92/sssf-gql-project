@@ -27,7 +27,7 @@ export default {
       const {createReadStream, filename, mimetype, encoding} = await file;
 
       console.log('File: ', file);
-      if (mimetype.includes('image')) {
+      //if (mimetype.includes('image')) {
         console.log('Was image!');
         try {
           const uploadedImageName = await handleImage(createReadStream,
@@ -39,10 +39,10 @@ export default {
           console.log(e.message);
           throw new Error('Something went wrong uploading image');
         }
-      } else {
-        console.log('Not an image!');
-        throw new Error('Only image uploads are allowed');
-      }
+      //} else {
+        //console.log('Not an image!');
+        //throw new Error('Only image uploads are allowed');
+      //}
 
     },
   },
