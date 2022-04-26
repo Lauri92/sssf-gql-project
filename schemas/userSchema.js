@@ -4,6 +4,7 @@ export default gql(`
 
   extend type Query {
     login(username: String!, password: String!): User
+    getActiveUser: User
     searchUsers(searchInput: String!): [User]
   }
 

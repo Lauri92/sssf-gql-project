@@ -9,6 +9,12 @@ export default {
       req.body = args;
       return await login(req);
     },
+    getActiveUser: async (parent, args, context) => {
+      if (!context.user) {
+        throw new AuthenticationError('You are not authorized');
+      }
+      return User.findById(context.user.id);
+    },
     searchUsers: async (parent, args, context) => {
       if (!context.user) {
         throw new AuthenticationError('You are not authenticated');
