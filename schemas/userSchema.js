@@ -20,6 +20,7 @@ export default gql(`
     username: String
     nickname: String
     token : String
+    profileImageUrl: String
   }
   
   input UserInput {
