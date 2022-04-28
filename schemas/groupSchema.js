@@ -48,5 +48,6 @@ export default gql`
     links: [Link]
     name: String
     description: String
+    groupAvatarUrl: String
   }
 `;
