@@ -6,6 +6,7 @@ scalar Upload
 
 type Mutation {
     profilePictureUpload(file: Upload!): File!
+    groupAvatarUpload(file: Upload!, groupId: ID!): String!
   }
 
 type File {
