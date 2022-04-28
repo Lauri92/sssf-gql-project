@@ -10,6 +10,7 @@ const groupSchema = new Schema({
   links: [{type: Schema.Types.ObjectId, 'default': [], ref: 'Link'}],
   name: {type: String, required: true},
   description: {type: String, required: true},
+  groupAvatarUrl: {type: String, required: false},
 });
 
 export default mongoose.model('Group', groupSchema);

@@ -1,10 +1,12 @@
 import User from '../models/userModel.js';
+import Group from '../models/groupModel.js';
 import {GraphQLUpload} from 'graphql-upload';
 import {finished} from 'stream/promises';
 import {BlobServiceClient} from '@azure/storage-blob';
 import {v4 as uuidv4} from 'uuid';
 
-const containerName = process.env.CONTAINER_NAME;
+const profileImagesContainer = process.env.PROFILE_IMAGES_CONTAINER_NAME;
+const groupAvatarsContainer = process.env.GROUP_AVATARS_CONTAINER;
 const storageAccountConnectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
 const blobServiceClient = BlobServiceClient.fromConnectionString(
     storageAccountConnectionString);
@@ -31,10 +33,10 @@ export default {
           mimetype.includes('application/octet-stream')) {
         console.log('Was image!');
         try {
-          const uploadedImageName = await handleImage(createReadStream,
+          const uploadedImageName = await handleProfileImage(createReadStream,
               context.user.id);
           await User.findByIdAndUpdate(context.user.id,
-              {profileImageUrl: `${containerName}/${uploadedImageName}`});
+              {profileImageUrl: `${profileImagesContainer}/${uploadedImageName}`});
           return {filename, mimetype, encoding};
         } catch (e) {
           console.log(e.message);
@@ -46,11 +48,82 @@ export default {
       }
 
     },
+    groupAvatarUpload: async (parent, {file}, context, args) => {
+      if (!context.user) {
+        console.log('Not authorized');
+        throw new AuthenticationError('You are not authorized');
+      }
+      const {createReadStream, filename, mimetype, encoding} = await file;
+
+      const group = await Group.findById(args.variableValues.groupId);
+      const groupAdmin = group.admin.toString();
+      if (context.user.id !== groupAdmin) {
+        throw new AuthenticationError(
+            'You are not allowed to post group avatar');
+      }
+
+      if (mimetype.includes('image') ||
+          mimetype.includes('application/octet-stream')) {
+        console.log('Was image!');
+        try {
+          const uploadedAvatarName = await handlegroupAvatar(createReadStream,
+              group);
+
+          await Group.findByIdAndUpdate(args.variableValues.groupId,
+              {groupAvatarUrl: `${groupAvatarsContainer}/${uploadedAvatarName}`});
+
+          return 'Successfully added avatar!';
+        } catch (e) {
+          console.log(e.message);
+          throw new Error('Something went wrong uploading image');
+        }
+      } else {
+        console.log('Not an image!');
+        throw new Error('Only image uploads are allowed');
+      }
+    },
   },
 
 };
 
-const handleImage = async (createReadStream, userId) => {
+const handlegroupAvatar = async (createReadStream, group) => {
+  const stream = createReadStream();
+  const uuidFileName = await uuidv4();
+  const out = await fs.createWriteStream(`uploads/${uuidFileName}`);
+  stream.pipe(out);
+  await finished(out);
+
+  if (group.groupAvatarUrl !== undefined) {
+    await deleteOldGroupAvatarFromStorage(group);
+  }
+
+  await uploadNewGroupAvatar(uuidFileName);
+
+  return uuidFileName;
+};
+
+const uploadNewGroupAvatar = async (uuidFileName) => {
+  const containerClient = await blobServiceClient.getContainerClient(
+      groupAvatarsContainer);
+  await containerClient.createIfNotExists();
+  const filePath = `uploads/${uuidFileName}`;
+  const blockBlobClient = await containerClient.getBlockBlobClient(
+      uuidFileName);
+  await blockBlobClient.uploadFile(filePath);
+  await fs.unlink(filePath, err => {
+    if (err) throw err;
+  });
+};
+
+const deleteOldGroupAvatarFromStorage = async (group) => {
+  const context = group.groupAvatarUrl;
+  const blobToDelete = context.match(/\/(.*)/)[1];
+  const container = await blobServiceClient.getContainerClient(
+      groupAvatarsContainer);
+  await container.deleteBlob(blobToDelete);
+};
+
+const handleProfileImage = async (createReadStream, userId) => {
 
   const stream = createReadStream();
   const uuidFileName = await uuidv4();
@@ -71,7 +144,7 @@ const handleImage = async (createReadStream, userId) => {
 
 const uploadNewProfileImage = async (uuidFileName) => {
   const containerClient = await blobServiceClient.getContainerClient(
-      containerName);
+      profileImagesContainer);
   await containerClient.createIfNotExists();
   const filePath = `uploads/${uuidFileName}`;
   const blockBlobClient = await containerClient.getBlockBlobClient(
@@ -85,6 +158,7 @@ const uploadNewProfileImage = async (uuidFileName) => {
 const deleteOldProfileImageFromStorage = async (user) => {
   const context = user.profileImageUrl;
   const blobToDelete = context.match(/\/(.*)/)[1];
-  const container = await blobServiceClient.getContainerClient(containerName);
+  const container = await blobServiceClient.getContainerClient(
+      profileImagesContainer);
   await container.deleteBlob(blobToDelete);
 };
