@@ -6,7 +6,7 @@ import {BlobServiceClient} from '@azure/storage-blob';
 import {v4 as uuidv4} from 'uuid';
 
 const profileImagesContainer = process.env.PROFILE_IMAGES_CONTAINER_NAME;
-const groupAvatarsContainer = process.env.GROUP_AVATARS_CONTAINER;
+const groupAvatarsContainer = process.env.GROUP_AVATARS_CONTAINER_NAME;
 const storageAccountConnectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
 const blobServiceClient = BlobServiceClient.fromConnectionString(
     storageAccountConnectionString);
@@ -49,6 +49,7 @@ export default {
 
     },
     groupAvatarUpload: async (parent, {file}, context, args) => {
+      console.log('Variable values: ', args.variableValues);
       if (!context.user) {
         console.log('Not authorized');
         throw new AuthenticationError('You are not authorized');
