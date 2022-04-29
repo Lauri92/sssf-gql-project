@@ -15,4 +15,13 @@ type File {
     mimetype: String!
     encoding: String!
   }
+  
+  
+  type GroupImage {
+    id: ID
+    group: ID
+    user: User
+    urlStorageReference: String
+    title: String
+  }
 `;

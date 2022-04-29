@@ -124,6 +124,13 @@ export default {
     },
   },
 
+  Group: {
+    groupImages: async (parent, args) => {
+      return GroupImage.find(
+          {_id: {$in: parent.groupImages}});
+    },
+  },
+
 };
 
 const handleNewGroupImage = async (createReadStream) => {

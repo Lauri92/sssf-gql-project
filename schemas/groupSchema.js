@@ -46,6 +46,7 @@ export default gql`
     admin: User
     members: [User]
     links: [Link]
+    groupImages: [GroupImage]
     name: String
     description: String
     groupAvatarUrl: String
