@@ -130,7 +130,6 @@ export default {
           {_id: {$in: parent.groupImages}});
     },
   },
-
 };
 
 const handleNewGroupImage = async (createReadStream) => {

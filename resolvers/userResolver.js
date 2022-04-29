@@ -61,4 +61,10 @@ export default {
     },
   },
 
+  GroupImage: {
+    user: async (parent, args) => {
+      return User.findById(parent.user);
+    },
+  },
+
 };
