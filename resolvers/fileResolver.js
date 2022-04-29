@@ -102,7 +102,7 @@ export default {
           const groupImage = await GroupImage.create({
             group: args.variableValues.groupId,
             user: context.user.id,
-            urlStorageReference: uploadedGroupImageName,
+            urlStorageReference: `${groupImagesContainer}/${uploadedGroupImageName}`,
             title: args.variableValues.title,
           });
 
