@@ -23,18 +23,13 @@ export default {
 
   Mutation: {
     profilePictureUpload: async (parent, {file}, context) => {
-      console.log('A request made it here!');
       if (!context.user) {
-        console.log('Not authorized');
         throw new AuthenticationError('You are not authorized');
       }
-      console.log('Was authorized!');
       const {createReadStream, filename, mimetype, encoding} = await file;
 
-      console.log('File: ', file);
       if (mimetype.includes('image') ||
           mimetype.includes('application/octet-stream')) {
-        console.log('Was image!');
         try {
           const uploadedImageName = await handleProfileImage(createReadStream,
               context.user.id);
@@ -46,15 +41,12 @@ export default {
           throw new Error('Something went wrong uploading image');
         }
       } else {
-        console.log('Not an image!');
         throw new Error('Only image uploads are allowed');
       }
 
     },
     groupAvatarUpload: async (parent, {file}, context, args) => {
-      console.log('Variable values: ', args.variableValues);
       if (!context.user) {
-        console.log('Not authorized');
         throw new AuthenticationError('You are not authorized');
       }
       const {createReadStream, filename, mimetype, encoding} = await file;
@@ -68,7 +60,6 @@ export default {
 
       if (mimetype.includes('image') ||
           mimetype.includes('application/octet-stream')) {
-        console.log('Was image!');
         try {
           const uploadedAvatarName = await handlegroupAvatar(createReadStream,
               group);
@@ -78,11 +69,9 @@ export default {
 
           return 'Successfully added avatar!';
         } catch (e) {
-          console.log(e.message);
           throw new Error('Something went wrong uploading image');
         }
       } else {
-        console.log('Not an image!');
         throw new Error('Only image uploads are allowed');
       }
     },
@@ -94,33 +83,40 @@ export default {
 
       const {createReadStream, filename, mimetype, encoding} = await file;
 
-      const isUserPartOfGroup =
-          await checkGroupMembers(
-              args.variableValues.groupId,
-              context.user.id,
+      if (mimetype.includes('image') ||
+          mimetype.includes('application/octet-stream')) {
+        const isUserPartOfGroup =
+            await checkGroupMembers(
+                args.variableValues.groupId,
+                context.user.id,
+            );
+
+        if (!isUserPartOfGroup) {
+          throw new AuthenticationError('You are not part of this group');
+        }
+
+        try {
+          const uploadedGroupImageName = await handleNewGroupImage(
+              createReadStream);
+
+          const groupImage = await GroupImage.create({
+            group: args.variableValues.groupId,
+            user: context.user.id,
+            urlStorageReference: uploadedGroupImageName,
+            title: args.variableValues.title,
+          });
+
+          await Group.findOneAndUpdate(
+              {_id: args.variableValues.groupId},
+              {$push: {groupImages: groupImage._id}}, {new: true},
           );
-
-      if (!isUserPartOfGroup) {
-        throw new AuthenticationError('You are not part of this group');
+          return 'Uploaded new group image';
+        } catch (e) {
+          throw new Error('Something went wrong uploading group image');
+        }
+      } else {
+        throw new Error('Only image uploads are allowed');
       }
-
-      const uploadedGroupImageName = await handleNewGroupImage(
-          createReadStream);
-
-      const groupImage = await GroupImage.create({
-        group: args.variableValues.groupId,
-        user: context.user.id,
-        urlStorageReference: uploadedGroupImageName,
-        title: args.variableValues.title,
-      });
-
-      await Group.findOneAndUpdate(
-          {_id: args.variableValues.groupId},
-          {$push: {groupImages: groupImage._id}}, {new: true},
-      );
-
-      return 'Things passed';
-
     },
   },
 
@@ -133,105 +129,41 @@ export default {
 };
 
 const handleNewGroupImage = async (createReadStream) => {
-  const stream = createReadStream();
-  const uuidFileName = await uuidv4();
-  const out = await fs.createWriteStream(`uploads/${uuidFileName}`);
-  stream.pipe(out);
-  await finished(out);
 
-  await uploadNewGroupImage(uuidFileName);
+  const uuidFileName = await moveFileToUploads(createReadStream);
+
+  await uploadNewFileToStorage(uuidFileName, groupImagesContainer);
 
   return uuidFileName;
-};
-
-const uploadNewGroupImage = async (uuidFileName) => {
-  const containerClient = await blobServiceClient.getContainerClient(
-      groupImagesContainer);
-  await containerClient.createIfNotExists();
-  const filePath = `uploads/${uuidFileName}`;
-  const blockBlobClient = await containerClient.getBlockBlobClient(
-      uuidFileName);
-  await blockBlobClient.uploadFile(filePath);
-  await fs.unlink(filePath, err => {
-    if (err) throw err;
-  });
 };
 
 const handlegroupAvatar = async (createReadStream, group) => {
-  const stream = createReadStream();
-  const uuidFileName = await uuidv4();
-  const out = await fs.createWriteStream(`uploads/${uuidFileName}`);
-  stream.pipe(out);
-  await finished(out);
+
+  const uuidFileName = await moveFileToUploads(createReadStream);
 
   if (group.groupAvatarUrl !== undefined) {
-    await deleteOldGroupAvatarFromStorage(group);
+    await deleteOldFileFromStorage(group.groupAvatarUrl, groupAvatarsContainer);
   }
 
-  await uploadNewGroupAvatar(uuidFileName);
+  await uploadNewFileToStorage(uuidFileName, groupAvatarsContainer);
 
   return uuidFileName;
-};
-
-const uploadNewGroupAvatar = async (uuidFileName) => {
-  const containerClient = await blobServiceClient.getContainerClient(
-      groupAvatarsContainer);
-  await containerClient.createIfNotExists();
-  const filePath = `uploads/${uuidFileName}`;
-  const blockBlobClient = await containerClient.getBlockBlobClient(
-      uuidFileName);
-  await blockBlobClient.uploadFile(filePath);
-  await fs.unlink(filePath, err => {
-    if (err) throw err;
-  });
-};
-
-const deleteOldGroupAvatarFromStorage = async (group) => {
-  const context = group.groupAvatarUrl;
-  const blobToDelete = context.match(/\/(.*)/)[1];
-  const container = await blobServiceClient.getContainerClient(
-      groupAvatarsContainer);
-  await container.deleteBlob(blobToDelete);
 };
 
 const handleProfileImage = async (createReadStream, userId) => {
 
-  const stream = createReadStream();
-  const uuidFileName = await uuidv4();
-  const out = await fs.createWriteStream(`uploads/${uuidFileName}`);
-  stream.pipe(out);
-  await finished(out);
+  const uuidFileName = await moveFileToUploads(createReadStream);
 
   const user = await User.findById(userId);
 
   if (user.profileImageUrl !== undefined) {
-    await deleteOldProfileImageFromStorage(user);
+    await deleteOldFileFromStorage(user.profileImageUrl,
+        profileImagesContainer);
   }
 
-  await uploadNewProfileImage(uuidFileName);
+  await uploadNewFileToStorage(uuidFileName, profileImagesContainer);
 
   return uuidFileName;
-};
-
-const uploadNewProfileImage = async (uuidFileName) => {
-  const containerClient = await blobServiceClient.getContainerClient(
-      profileImagesContainer);
-  await containerClient.createIfNotExists();
-  const filePath = `uploads/${uuidFileName}`;
-  const blockBlobClient = await containerClient.getBlockBlobClient(
-      uuidFileName);
-  await blockBlobClient.uploadFile(filePath);
-  await fs.unlink(filePath, err => {
-    if (err) throw err;
-  });
-};
-
-const deleteOldProfileImageFromStorage = async (user) => {
-  const context = user.profileImageUrl;
-  const blobToDelete = context.match(/\/(.*)/)[1];
-  const container = await blobServiceClient.getContainerClient(
-      profileImagesContainer);
-  await container.deleteBlob(blobToDelete);
 };
 
 const checkGroupMembers = async (groupid, userId) => {
@@ -242,4 +174,34 @@ const checkGroupMembers = async (groupid, userId) => {
   });
   usersAndAdmin.push(group.admin.toString());
   return usersAndAdmin.includes(userId);
+};
+
+const moveFileToUploads = async (createReadStream) => {
+  const stream = createReadStream();
+  const uuidFileName = await uuidv4();
+  const out = await fs.createWriteStream(`uploads/${uuidFileName}`);
+  stream.pipe(out);
+  await finished(out);
+
+  return uuidFileName;
+};
+
+const uploadNewFileToStorage = async (uuidFileName, containerName) => {
+  const containerClient = await blobServiceClient.getContainerClient(
+      containerName);
+  await containerClient.createIfNotExists();
+  const filePath = `uploads/${uuidFileName}`;
+  const blockBlobClient = await containerClient.getBlockBlobClient(
+      uuidFileName);
+  await blockBlobClient.uploadFile(filePath);
+  await fs.unlink(filePath, err => {
+    if (err) throw err;
+  });
+};
+
+const deleteOldFileFromStorage = async (blobContext, containerName) => {
+  const blobToDelete = blobContext.match(/\/(.*)/)[1];
+  const container = await blobServiceClient.getContainerClient(
+      containerName);
+  await container.deleteBlob(blobToDelete);
 };
