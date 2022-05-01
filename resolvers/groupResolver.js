@@ -2,7 +2,14 @@
 import Group from '../models/groupModel.js';
 import Link from '../models/infoLinkModel.js';
 import User from '../models/userModel.js';
+import GroupImageModel from '../models/groupImageModel.js';
 import {AuthenticationError, UserInputError} from 'apollo-server-express';
+import {BlobServiceClient} from '@azure/storage-blob';
+
+const blobServiceClient = BlobServiceClient.fromConnectionString(
+    process.env.AZURE_STORAGE_CONNECTION_STRING);
+const groupImagesContainer = await blobServiceClient.getContainerClient(
+    process.env.GROUP_IMAGES_CONTAINER_NAME);
 
 export default {
 
@@ -141,8 +148,28 @@ export default {
       const links = group.links.map(link => {
         return link.toString();
       });
+      const groupImageIds = group.groupImages.map(image => {
+        return image.toString();
+      });
+
+      const groupImageObjects = await GroupImageModel.find({
+        _id: {$in: groupImageIds},
+      });
+
+      const groupImageContainerFileNames = groupImageObjects.map(
+          object => {
+            return object.urlStorageReference.match(
+                /\/(.*)/)[1];
+          });
 
       try {
+
+        for (const groupImage of groupImageContainerFileNames) {
+          await groupImagesContainer.deleteBlob(groupImage);
+        }
+
+        await GroupImageModel.deleteMany({_id: groupImageIds});
+
         await Link.deleteMany({_id: links});
 
         await Group.deleteOne({_id: args.groupId});
@@ -154,4 +181,8 @@ export default {
 
     },
   },
+};
+
+const deleteImagesFromStorage = async () => {
+
 };
