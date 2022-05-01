@@ -134,6 +134,43 @@ export default {
         throw new Error('Something went wrong updating');
       }
     },
+    deleteGroupImage: async (parent, args, context) => {
+
+      if (!context.user) {
+        throw new AuthenticationError('You are not authorized');
+      }
+
+      const user = context.user.id;
+      const group = await Group.findById(args.groupId);
+      const groupImage = await GroupImageModel.findById(args.groupImageId);
+
+      const groupAdmin = group.admin.toString();
+      const groupImageSubmitter = groupImage.user.toString();
+
+      if (user === groupAdmin || user === groupImageSubmitter) {
+        try {
+          const storagecontainerFileName = groupImage.urlStorageReference.match(
+              /\/(.*)/)[1];
+          await groupImagesContainer.deleteBlob(storagecontainerFileName);
+
+          await Group.findOneAndUpdate(
+              {_id: args.groupId},
+              {$pull: {groupImages: args.groupImageId}},
+          );
+
+          await GroupImageModel.findOneAndDelete({_id: args.groupImageId});
+
+          return 'Removed group image';
+        } catch (e) {
+          throw new Error('Something went wrong deleting image');
+        }
+
+      } else {
+        throw new AuthenticationError(
+            'You are not allowed to delete this image');
+      }
+
+    },
     deleteGroup: async (parent, args, context) => {
       if (!context.user) {
         throw new AuthenticationError('You are not authorized');
@@ -181,8 +218,4 @@ export default {
 
     },
   },
-};
-
-const deleteImagesFromStorage = async () => {
-
 };

@@ -35,6 +35,11 @@ export default gql`
       description: String!
     ): Group
     
+    deleteGroupImage(
+      groupId: ID!
+      groupImageId: ID!
+    ): String
+    
     deleteGroup(
       groupId: ID!
     ): String
