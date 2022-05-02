@@ -10,6 +10,8 @@ const blobServiceClient = BlobServiceClient.fromConnectionString(
     process.env.AZURE_STORAGE_CONNECTION_STRING);
 const groupImagesContainer = await blobServiceClient.getContainerClient(
     process.env.GROUP_IMAGES_CONTAINER_NAME);
+const groupAvatarsContainer = await blobServiceClient.getContainerClient(
+    process.env.GROUP_AVATARS_CONTAINER_NAME);
 
 export default {
 
@@ -189,6 +191,8 @@ export default {
         return image.toString();
       });
 
+      let groupAvatarUrl = group.groupAvatarUrl;
+
       const groupImageObjects = await GroupImageModel.find({
         _id: {$in: groupImageIds},
       });
@@ -200,6 +204,12 @@ export default {
           });
 
       try {
+
+        if (groupAvatarUrl !== undefined) {
+          groupAvatarUrl = groupAvatarUrl.match(
+              /\/(.*)/)[1];
+          await groupAvatarsContainer.deleteBlob(groupAvatarUrl);
+        }
 
         for (const groupImage of groupImageContainerFileNames) {
           await groupImagesContainer.deleteBlob(groupImage);
