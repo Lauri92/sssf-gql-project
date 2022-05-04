@@ -6,6 +6,8 @@ import connectMongo from './db/db.js';
 import dotenv from 'dotenv';
 import {checkAuth} from './utils/auth.js';
 import {graphqlUploadExpress} from 'graphql-upload';
+import {Server} from 'socket.io';
+import {handleSocket} from './utils/socket.js';
 
 dotenv.config();
 
@@ -32,6 +34,8 @@ dotenv.config();
 
     const app = express();
 
+    app.use(express.static('public'));
+
     app.get('/', async (req, res) => {
       res.send('Hello travel-journal');
     });
@@ -42,10 +46,14 @@ dotenv.config();
 
     server.applyMiddleware({app});
 
-    app.listen({port: process.env.PORT || 3000}, () =>
+    const http = app.listen({port: process.env.PORT || 3000}, () =>
         console.log(
             `🚀 Server ready`),
     );
+
+    const io = new Server(http);
+    await handleSocket(io);
+
   } catch (e) {
     console.log('server error: ' + e.message);
   }
