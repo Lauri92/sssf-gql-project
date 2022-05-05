@@ -62,7 +62,7 @@ Android application.
 
 ### All the mutations and queries, apart from ``registration / login`` require Bearer token to be sent in the Authorization header as follows: ```Bearer <YOUR TOKEN>```, token is assigned/sent to client upon login.
 
-### For extensive list of all the queries used check out: [List of Queries and mutations](https://github.com/Lauri92/Travel-Journal/tree/master/app/src/main/graphql/fi/lauriari/traveljournal)
+### For extensive list of all the queries and mutations used check out: [List of Queries and mutations](https://github.com/Lauri92/Travel-Journal/tree/master/app/src/main/graphql/fi/lauriari/traveljournal)
 
 ## GraphQL Schema:
 ```
